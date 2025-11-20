@@ -1,0 +1,437 @@
+/* ===== Starting Page Styles ===== */
+body.starting-page {
+    font-family: 'Roboto', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #dff2ef;
+    color: #23423f;
+    overflow-x: hidden;
+    width: 100%;
+}
+
+body.starting-page .hero {
+    height: calc(100vh - 60px);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: left;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(6px);
+    padding: 15vh 10% 0 10%; 
+    position: relative;
+    box-sizing: border-box;
+}
+
+body.starting-page .hero::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 60%;
+    height: 100%;
+    background: url("خلفية.png") no-repeat right center;
+    background-size: contain;
+    opacity: 0.9;
+    max-width: 100%;
+}
+
+body.starting-page .hero-content {
+    max-width: 45%;
+    z-index: 1;
+}
+
+body.starting-page .hero-content h1 {
+    font-size: 42px;
+    color: #2d5751;
+    font-weight: 700;
+    white-space: nowrap; 
+}
+
+body.starting-page .hero-content p {
+    font-size: 18px;
+    margin-top: 10px;
+    color: #23423f;
+}
+
+body.starting-page .btn {
+    background-color: #2d5751;
+    color: #fff;
+    padding: 10px 25px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.3s;
+    margin-top: 15px;
+}
+
+body.starting-page .btn:hover {
+    background-color: #1e3d39;
+}
+
+body.starting-page .features {
+    padding: 60px 20px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(4px);
+    display: block; 
+    text-align: center; 
+}
+
+body.starting-page .features h2 {
+    color: #2d5751;
+    font-size: 28px;
+    margin-bottom: 30px;
+    text-align: center; 
+    width: 100%; 
+}
+
+body.starting-page .feature {
+    text-align: center;
+    width: 28%;
+    max-width: 320px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin: 20px;
+    color: #23423f;
+    display: inline-block;
+    vertical-align: top;
+    white-space: normal;
+}
+
+body.starting-page .feature img {
+    width: 100%;
+    height: 220px;
+    border-radius: 15px;
+    margin-bottom: 15px;
+    object-fit: cover;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+}
+
+body.starting-page .feature:nth-child(1) img {
+    clip-path: polygon(0 0, 100% 0, 100% 85%, 70% 100%, 0 85%);
+}
+
+body.starting-page .feature:nth-child(2) img {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 70% 100%, 0 60%);
+}
+
+body.starting-page .feature:nth-child(3) img {
+    clip-path: polygon(0 0, 100% 0, 100% 80%, 50% 100%, 0 80%);
+}
+
+body.starting-page .feature h3 {
+    color: #2d5751;
+    font-size: 20px;
+    margin-top: 10px;
+}
+
+body.starting-page .feature p {
+    font-size: 16px;
+}
+
+body.starting-page .team-section {
+    position: relative;
+    overflow: hidden; /* حتى لا يخرج التموج عن القسم */
+}
+
+body.starting-page .team-section .wave-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 600px; /* مطابق للـ SVG */
+    pointer-events: none;
+    z-index: 0;
+}
+
+body.starting-page .about-content {
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+body.starting-page .about-content h2 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    color: #2d5751;
+}
+
+body.starting-page .about-content p {
+    font-size: 1.1em;
+    line-height: 1.8;
+    color: #23423f;
+    margin-bottom: 50px;
+}
+
+body.starting-page .team-intro {
+    font-size: 1.2em;
+    margin-bottom: 40px;
+    color: #2d5751;
+    position: relative;  
+    z-index: 2;          
+    text-align: center;  
+}
+
+body.starting-page .team {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 40px;
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;  
+    z-index: 2;         
+}
+
+
+body.starting-page .member {
+    text-align: center;
+}
+
+body.starting-page .member .role {
+    font-size: 14px;
+    color: #7a8a89;
+    margin-top: 4px;
+}
+
+body.starting-page .team .member {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    width: 220px;
+    padding: 20px;
+    transition: transform 0.3s ease;
+    flex: 1 1 220px;
+    max-width: 250px;
+    text-align: center;
+}
+
+
+body.starting-page .team .member:hover {
+    transform: translateY(-10px);
+}
+
+/* Positioning the link container (Centers the icon) */
+body.starting-page .member .social-links {
+    margin-top: 5px; 
+    display: flex;
+    justify-content: center; 
+}
+
+/* Styling the icon itself (Color, Size, and Hover Effect) */
+body.starting-page .member .social-links a {
+    color: #0077B5; /* Sets the LinkedIn icon color to standard blue */
+    font-size: 1.5em; /* Controls the icon size */
+    text-decoration: none;
+    display: inline-block;
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+body.starting-page .member .social-links a:hover {
+    color: #1e3d39; /* Darker theme color on hover */
+    transform: scale(1.1);
+}
+
+body.starting-page .wave-top path {
+    fill: #9ed3cc !important;
+    fill-opacity: 0.9 !important;
+}
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #ffffff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    height: 60px;
+    width: 100%;
+    padding: 0 ;
+    box-sizing: border-box; 
+    position: sticky;  
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+#about, #team, #feature {
+  scroll-margin-top: 100px; 
+}
+header .logo {
+    display: flex;
+    align-items: center;
+    font-size: 26px;
+    font-weight: 600;
+    color: #2d5751;
+    padding-left: 0;
+    padding-right: 40px;
+}
+header .logo img {
+    height: 60px;
+    margin: 0;
+    padding: 0;
+}
+
+.centered-title {
+    text-align: center;
+    margin: 50px 0; 
+    font-size: 36px;
+    font-weight: 700;
+    color: #2d5751;
+}
+.navbar {
+    display: flex;
+    justify-content: flex-end; 
+    align-items: center;
+    height: 60px;
+    padding: 0;
+    gap: 40px;
+}
+.nav-left a {
+    color: #2d5751;
+    margin-right: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+.nav-left a.active {
+    background-color: #2d5751; 
+    color: white;              
+    font-weight: bold;
+    padding: 10px 18px;
+    border-radius: 50px;       
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transition: all 0.3s;
+}
+
+.nav-left a:hover {
+    color: #1e3d39;
+}
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding-right: 0;
+    padding-left: 40px;
+}
+.user-controls {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.user-info {
+    text-align: right;
+}
+.username {
+    font-weight: 600;
+    color: #0b5345;
+    display: block;
+}
+.user-title {
+    font-size: 13px;
+    color: #6c8b88;
+}
+.user-icon {
+    width: 40px;
+    height: 40px;
+    background-color: #2e8b82;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.avatar-img { 
+    width: 40px;            
+    height: 40px; 
+    border-radius: 50%;    
+    object-fit: cover;      
+    object-position: center; 
+    display: block; 
+} 
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 40px; 
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    min-width: 150px;
+    z-index: 1000;
+}
+.dropdown-separator {
+    border: none;
+    border-top: 1px solid #f0f0f0;
+    margin: 5px 0;
+}
+.dropdown-menu .logout-link {
+    color: #cc3333;
+    font-weight: bold;
+}
+.dropdown-menu.show {
+    display: block;
+}
+.dropdown-menu a {
+    display: block;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #23423f;
+    font-size: 0.9em;
+}
+.dropdown-menu a:hover {
+    background-color: #f0f0f0;
+}
+.logout-message {
+    position: fixed;       
+    top: 20px;             
+    left: 50%;            
+    transform: translateX(-50%);  
+    background-color: #d4edda;   
+    color: #155724;       
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    z-index: 9999;        
+    opacity: 0;            
+    animation: fadeInOut 3s forwards;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { opacity: 0; }
+}
+.footer {
+  background-color: #9ed3cc;
+  padding: 20px 0;
+  text-align: center;
+  color: #ffffff;
+  position: relative; 
+  z-index: 3;         
+}
+
+
+.footer-content p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+

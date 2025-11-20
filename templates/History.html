@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr"> 
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagnosis History - DeepSight</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='Pages.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+
+    <header>
+  <div class="logo">
+     <a href="{{ url_for('starting') }}">
+       <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
+     </a> 
+  </div>
+  <nav class="navbar">
+      <div class="nav-left">
+          <!-- Home دائمًا -->
+          <a href="{{ url_for('starting') }}" class="{% if request.endpoint == 'starting' %}active{% endif %}">Home</a>
+
+          <!-- الروابط التي تنقلك للقسم المطلوب داخل صفحة starting -->
+          <a href="{{ url_for('starting') }}#feature">Features</a>
+          <a href="{{ url_for('starting') }}#about">About Us</a>
+          <a href="{{ url_for('starting') }}#team">Team</a>
+
+          <!-- الروابط المستقلة -->
+          <a href="{{ url_for('history') }}" class="{% if request.endpoint == 'history' %}active{% endif %}">Diagnosis History</a>
+          <a href="{{ url_for('support') }}" class="{% if request.endpoint == 'support' %}active{% endif %}">Support</a>
+      </div>
+
+      <div class="nav-right">
+          <div class="user-controls">
+              <div class="user-info">
+                  <span class="username">{{ session['doctor_name'] }}</span>
+                  <span class="user-title">{{ session['doctor_specialty'] }}</span>
+              </div>
+             <div class="user-icon" id="userIcon"> 
+            {% if session.get('doctor_image') %}
+            <img 
+            src="{{ session['doctor_image'] }}" 
+            alt="Doctor Avatar" 
+            class="avatar-img">
+            {% else %}
+            <i class="fa-solid fa-user fa-lg"></i>
+            {% endif %}
+            </div>
+              <div class="dropdown-menu" id="dropdownMenu">
+                  <a href="{{ url_for('profile') }}">View Profile</a>
+                  <a href="{{ url_for('logout') }}" class="logout-link">Logout</a>
+              </div>
+          </div>
+      </div>
+
+  </nav>
+</header>
+
+  <div class="dashboard-layout">
+    <main class="main-content">
+      <h1 class="page-header"><i class="fas fa-history"></i> Diagnosis History</h1>
+      
+      <div class="search-controls">
+        <div class="search-input-group">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" id="patient-id-search" placeholder="Search by Patient ID..." onkeyup="filterTable()">
+        </div>
+      </div>
+      
+      <div class="table-container">
+        <table class="history-table" id="history-table">
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Patient Name</th>
+              <th>Patient ID</th>
+              <th>Doctor Name</th>
+              <th>Scan Time & Date</th>
+
+              <th class="result-header">Result</th>
+              <th>Report</th>
+            </tr>
+          </thead>
+          <tbody id="history-body">
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+ <script>
+   function formatScan(dt) {
+    if (!dt) return "—";
+    const s = String(dt).replace('T', ' ');
+    const m = s.match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}):(\d{2})/);
+    return m ? `${m[1]} ${m[2]}:${m[3]}` : s;
+  }
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  fetch("/get_history")
+    .then(res => res.json())
+    .then(data => {
+      const tbody = document.getElementById("history-body");
+      tbody.innerHTML = "";
+
+      data.forEach((item, index) => {
+        const cls = (item.result || '').toLowerCase() === 'dme' ? 'DME' : 'Normal';
+        const tr = document.createElement("tr");
+        tr.classList.add("analysis-row", cls.toLowerCase());
+
+        tr.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${item.patient_name}</td>
+          <td>${item.Patient_ID}</td>
+          <td>${item.doctor_name}</td>
+          <td>${formatScan(item.scan_datetime)}</td>
+
+          <td><span class="result-badge ${cls}">${cls}</span></td>
+          <td>
+            <i class="fas fa-download download-icon"
+               title="Download report"
+               onclick="downloadReportById(${item.diag_id})"></i>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    })
+    .catch(err => console.error("Error fetching history:", err));
+});
+
+function downloadReportById(diagId) {
+  if (!diagId) {
+    alert("Invalid report id.");
+    return;
+  }
+  // نفس الراوت الموحد
+  window.location.href = '/download_report/' + encodeURIComponent(diagId);
+}
+
+function filterTable() {
+  let input = document.getElementById("patient-id-search");
+  let filter = input.value.toUpperCase();
+  let table = document.getElementById("history-table");
+  let tr = table.getElementsByTagName("tr");
+
+  for (let i = 1; i < tr.length; i++) {
+    let td = tr[i].getElementsByTagName("td")[2];
+    if (td) {
+      let txtValue = td.textContent || td.innerText;
+      tr[i].style.display = txtValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+    }
+  }
+}
+</script>
+
+ <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>

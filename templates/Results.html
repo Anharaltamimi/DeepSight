@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Result Page</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='Pages.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header>
+    <div class="logo">
+        <a href="#"><img src="{{ url_for('static', filename='logo.png') }}" alt="Logo"></a>
+    </div>
+    <nav class="navbar">
+    <div class="nav-left">
+    <a href="{{ url_for('starting') }}" class="{% if request.endpoint == 'starting' %}active{% endif %}">Home</a>
+    <a href="{{ url_for('upload_page') }}" class="{% if request.endpoint == 'upload_page' %}active{% endif %}">Upload</a>
+    <a href="{{ url_for('history') }}" class="{% if request.endpoint == 'history' %}active{% endif %}">Diagnosis History</a>
+    <a href="{{ url_for('support') }}" class="{% if request.endpoint == 'support' %}active{% endif %}">Support</a>
+    </div> 
+        <div class="nav-right">
+            <div class="user-controls">
+                <div class="user-info">
+                    <span class="username">{{ session['doctor_name'] }}</span>
+                    <span class="user-title">{{ session['doctor_specialty'] }}</span>
+                </div>
+                <div class="user-icon" id="userIcon"> 
+            {% if session.get('doctor_image') %}
+            <img 
+            src="{{ session['doctor_image'] }}" 
+            alt="Doctor Avatar" 
+            class="avatar-img">
+            {% else %}
+            <i class="fa-solid fa-user fa-lg"></i>
+            {% endif %}
+            </div>
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <a href="#">View Profile</a>
+                    <a href="{{ url_for('logout') }}" class="logout-link">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<div id="middle">
+    <div id="resultBox">
+        {% if image_name %}
+          <img id="resultImg" src="{{ url_for('static', filename='uploads/' ~ image_name) }}" alt="OCT Image">
+        {% else %}
+          <span>No image</span>
+        {% endif %}
+    </div>
+    {% set v = (label or 'None') %}
+    {% set ok = (v|lower == 'normal') %}
+    <p class="intro-text">The scan has been analyzed. The result is:</p>
+    <div id="result" class="{{ 'Normal' if ok else 'DME' }}">
+        {{ v }}
+    </div>
+
+    <button onclick="window.location.href='{{ url_for('report') }}'">View Report</button>
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

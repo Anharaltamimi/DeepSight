@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Image</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='Pages.css') }}">
+</head>
+<body>
+
+<header>
+    <div class="logo">
+       <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo"> 
+    </div>
+    <nav class="navbar">
+    <div class="nav-left">
+    <a href="{{ url_for('starting') }}" class="{% if request.endpoint == 'starting' %}active{% endif %}">Home</a>
+    <a href="{{ url_for('upload_page') }}" class="{% if request.endpoint == 'upload_page' %}active{% endif %}">Upload</a>
+    <a href="{{ url_for('history') }}" class="{% if request.endpoint == 'history' %}active{% endif %}">Diagnosis History</a>
+    <a href="{{ url_for('support') }}" class="{% if request.endpoint == 'support' %}active{% endif %}">Support</a>
+    </div> 
+        <div class="nav-right">
+            <div class="user-controls">
+                <div class="user-info">
+                    <span class="username">{{ session['doctor_name'] }}</span>
+                    <span class="user-title">{{ session['doctor_specialty'] }}</span>
+                </div>
+              <div class="user-icon" id="userIcon"> 
+            {% if session.get('doctor_image') %}
+            <img 
+            src="{{ session['doctor_image'] }}" 
+            alt="Doctor Avatar" 
+            class="avatar-img">
+            {% else %}
+            <i class="fa-solid fa-user fa-lg"></i>
+            {% endif %}
+            </div>
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <a href="{{ url_for('profile') }}">View Profile</a>
+                    <a href="{{ url_for('logout') }}" class="logout-link">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+
+
+<h1 class="system-title">DeepSight System</h1>
+{% if message %}
+<div class="error-box" style="
+    color: white;
+    background: #d9534f;
+    padding: 12px;
+    margin: 15px auto;
+    width: 60%;
+    text-align: center;
+    border-radius: 8px;
+    font-weight: bold;
+">
+    {{ message }}
+</div>
+{% endif %}
+
+<form id="mainForm" action="{{ url_for('upload_page') }}" method="POST" enctype="multipart/form-data" novalidate>
+    <div class="form-container">
+
+        <div class="patient-section">
+            <p>Enter Patient Information</p>
+
+            <div class="upload-group">
+                <label for="pName">Patient Name</label>
+                <input id="pName" name='fname' type='text' placeholder='e.g., Ahmed Salah'>
+                <span id="nameError" class="error"></span>
+            </div>
+
+            <div class="upload-group">
+                <label for="pId">Patient ID</label>
+                <input id="pId" name='id' type='text' placeholder='e.g., 123456'>
+                <span id="idError" class="error"></span>
+            </div>
+
+            <div class="upload-group">
+                <label for="pGender">Gender</label>
+                <select id="pGender" name='gender'>
+                    <option value=''>Select Gender</option>
+                    <option value='Male'>Male</option>
+                    <option value='Female'>Female</option>
+                </select>
+                <span id="genderError" class="error"></span>
+            </div>
+
+            <div class="upload-group">
+                <label for="pDate">Date of Birth</label>
+                <input id="pDate" name='dateOfBirth' type='date'>
+                <span id="dateError" class="error"></span>
+            </div>
+
+        </div>
+        <div class="image-section">
+            <p>Insert OCT Image Here</p>
+             <input id="uploadImage" name="uploadImage" type="file" accept="image/*" >
+             <label id='label' for='uploadImage'>
+             <i class="fas fa-cloud-upload-alt upload-icon"></i>
+             <span>Drag & Drop or Click to Upload</span>
+            </label>
+            <span id="imageError" class="error"></span>
+        </div>
+    </div>
+    <button type="submit">Start Diagnosis</button>
+</form>
+     <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+
+<!-- Script للتحقق من الحقول -->
+<script>
+    const form = document.getElementById("mainForm");
+    const input = document.getElementById("uploadImage");
+    const box = document.getElementById("label");
+    const nameInput = document.getElementsByName("fname")[0];
+    const idInput = document.getElementsByName("id")[0];
+    const genderInput = document.getElementsByName("gender")[0];
+    const dateInput = document.getElementsByName("dateOfBirth")[0];
+
+    const imageError = document.getElementById("imageError");
+    const nameError = document.getElementById("nameError");
+    const idError = document.getElementById("idError");
+    const genderError = document.getElementById("genderError");
+    const dateError = document.getElementById("dateError");
+
+    const ALLOWED_EXT = ["jpg","jpeg","png","gif","bmp","tif","tiff","webp","svg","heic","heif"];
+
+    function isValidImage(file){
+        if(!file) return false;
+        const okType = file.type && file.type.startsWith("image/");
+        const name = file.name || "";
+        const ext = name.includes(".") ? name.split(".").pop().toLowerCase() : "";
+        const okExt = ALLOWED_EXT.includes(ext);
+        return okType && okExt;
+    }
+
+    input.addEventListener("change", () => {
+        imageError.textContent = "";
+        const file = input.files && input.files[0];
+        if (!file) {
+            box.style.backgroundImage = "";
+            box.textContent = "Drag & Drop or Click to Upload";
+            return;
+        }
+        if (!isValidImage(file)) {
+            imageError.textContent = "*Only image files are allowed";
+            input.value = "";
+            box.style.backgroundImage = "";
+            box.textContent = "Drag & Drop or Click to Upload";
+            return;
+        }
+        box.style.backgroundImage = `url(${URL.createObjectURL(file)})`;
+        box.style.backgroundSize = "contain";
+        box.style.backgroundPosition = "center";
+        box.style.backgroundRepeat = "no-repeat";
+        box.textContent = "";
+    });
+
+    form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        imageError.textContent = nameError.textContent = idError.textContent =
+        genderError.textContent = dateError.textContent = "";
+        let valid = true;
+
+        const file1 = input.files && input.files[0];
+        if (!file1) { imageError.textContent = "*Please insert an image"; valid = false; }
+        else if (!isValidImage(file1)) { imageError.textContent = "*Only image files are allowed"; valid = false; }
+
+        if (!nameInput.value.trim()) { nameError.textContent = "*Please enter patient name"; valid = false; }
+        else if (!/^[A-Za-z\s]{1,50}$/.test(nameInput.value.trim())) { nameError.textContent = "*Letters only, max 50 chars"; valid = false; }
+
+        if (!idInput.value.trim()) { idError.textContent = "*Patient ID required"; valid = false; }
+        else if (!/^\d{10}$/.test(idInput.value.trim())) { idError.textContent = "*Exactly 10 digits"; valid = false; }
+
+        if (!genderInput.value) { genderError.textContent = "*Please select gender"; valid = false; }
+
+        if (!dateInput.value.trim()) { dateError.textContent = "*Select date of birth"; valid = false; }
+        else if (new Date(dateInput.value) > new Date()) { dateError.textContent = "*DOB cannot be in the future"; valid = false; }
+
+        if(!valid) return;
+        form.submit();
+    });
+
+    // Dropdown toggle
+    const userIcon = document.getElementById("userIcon");
+    const userDropdown = document.getElementById("userDropdown");
+    userIcon.addEventListener("click", () => {
+        userDropdown.classList.toggle("show");
+    });
+    window.addEventListener("click", (e) => {
+        if(!userIcon.contains(e.target) && !userDropdown.contains(e.target)){
+            userDropdown.classList.remove("show");
+        }
+    });
+</script>
+
+</body>
+</html>

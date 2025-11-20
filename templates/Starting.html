@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DeepSight - Welcome</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='Styles.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="starting-page">
+  {% if message %}
+  <div class="logout-message">{{ message }}</div>
+  {% endif %}
+  <!-- Header -->
+<header>
+  <div class="logo">
+     <a href="{{ url_for('starting') }}"><img src="{{ url_for('static', filename='logo.png') }}" alt="Logo"></a> 
+  </div>
+  <nav class="navbar">
+      <div class="nav-left">
+    <a href="{{ url_for('starting') }}" class="nav-link" data-target="home">Home</a>
+    <a href="#feature" class="nav-link" data-target="feature">Features</a>
+    <a href="#about" class="nav-link" data-target="about">About Us</a>
+    <a href="#team" class="nav-link" data-target="team">Team</a>
+
+    {% if logged_in %}
+        <a href="{{ url_for('history') }}" class="nav-link" data-target="history">Diagnosis History</a>
+        <a href="{{ url_for('support') }}" class="nav-link" data-target="support">Support</a>
+    {% else %}
+        <a href="{{ url_for('support') }}" class="nav-link" data-target="support">Support</a>
+    {% endif %}
+</div>
+
+
+      {% if logged_in %}
+      <div class="nav-right">
+          <div class="user-controls">
+              <div class="user-info">
+                  <span class="username">{{ session['doctor_name'] }}</span>
+                  <span class="user-title">{{ session['doctor_specialty'] }}</span>
+              </div>
+            <div class="user-icon" id="userIcon"> 
+            {% if session.get('doctor_image') %}
+            <img 
+            src="{{ session['doctor_image'] }}" 
+            alt="Doctor Avatar" 
+            class="avatar-img">
+            {% else %}
+            <i class="fa-solid fa-user fa-lg"></i>
+            {% endif %}
+            </div>
+              <div class="dropdown-menu" id="dropdownMenu">
+                  <a href="{{ url_for('profile') }}">View Profile</a>
+                  <a href="{{ url_for('logout') }}" class="logout-link">Logout</a>
+              </div>
+          </div>
+      </div>
+      {% endif %}
+  </nav>
+</header>
+
+  <!-- Hero Section -->
+  <div class="hero">
+    <div class="hero-content">
+      <h1>DeepSight AI Diagnosis</h1>
+      <p>Revolutionize Diabetic Maculopathy detection with AI-powered OCT analysis.</p>
+
+      {% if not logged_in %}
+      <a href="{{ url_for('login') }}" class="btn">Get Started</a>
+      {% else %}
+      <a href="{{ url_for('upload_page') }}" class="btn">Get Started</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Features Section -->
+  <div id="feature" class="features">
+    <h2>Features</h2>
+    <div class="feature">
+      <img src="{{ url_for('static', filename='fast-diagnosis.png') }}" alt="Fast Diagnosis">
+      <h3>Fast Diagnosis</h3>
+      <p>Quick AI analysis of OCT scans for immediate clinical insights.</p>
+    </div>
+    <div class="feature">
+      <img src="{{ url_for('static', filename='high-accuracy.jpg') }}" alt="High Accuracy">
+      <h3>High Accuracy</h3>
+      <p>Provides efficient and accurate diagnosis results.</p>
+    </div>
+    <div class="feature">
+      <img src="{{ url_for('static', filename='visual-insights.png') }}" alt="Visual Insights">
+      <h3>Visual Insights</h3>
+      <p>Grad-CAM heatmaps highlight critical areas of concern.</p>
+    </div>
+  </div>
+<!-- About Us Section -->
+<section id="about" class="about-section">
+  <div class="about-content">
+    <h2>About Us</h2>
+
+    <!-- Our Story -->
+    <div class="about-subsection">
+      <h3>Our Story</h3>
+      <p>
+        This system is part of a <b>graduation project</b> aimed at creating an AI-powered tool 
+        to assist ophthalmologists in diagnosing <b>Diabetic Maculopathy</b> through OCT images. 
+        It combines deep learning technology with clinical expertise to enhance early detection 
+        and improve treatment outcomes.
+      </p>
+    </div>
+
+    <!-- Our Vision -->
+    <div class="about-subsection">
+      <h3>Our Vision</h3>
+      <p>
+        To revolutionize ophthalmology by providing fast, accurate, and AI-driven diagnostics, 
+        enabling better patient care and earlier interventions for Diabetic Maculopathy.
+      </p>
+    </div>
+
+    <!-- Our Mission -->
+    <div class="about-subsection">
+      <h3>Our Mission</h3>
+      <p>
+        To develop a reliable AI system that empowers clinicians with advanced OCT image analysis, 
+        supporting them in making informed decisions and improving treatment efficiency.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="team" class="team-section">
+
+    <div class="team-intro">
+      <h2>Our Project Team</h2>
+      <p>
+        This system was developed as a <b>graduation project</b> by our dedicated team of students 
+        under the supervision of <b>Dr. Ghada Emam</b>.
+      </p>
+    </div>
+
+    <div class="team">
+      
+      <div class="member">
+        <h3>Maryam Alshibli</h3>
+        <p class="role">IT Senior Student</p>
+        <div class="social-links">
+          <a href="https://www.linkedin.com/in/maryam-alshibli-99ab30357/" target="_blank" aria-label="Maryam Alshibli LinkedIn">
+            <i class="fab fa-linkedin"></i>
+          </a>
+          </div>
+      </div>
+
+      <div class="member">
+        <h3>Anhar Altamimi</h3>
+        <p class="role">IT Senior Student</p>
+        <div class="social-links">
+          <a href="https://www.linkedin.com/in/anhar-altamimi-1a182831a" target="_blank" aria-label="Anhar Altamimi LinkedIn">
+            <i class="fab fa-linkedin"></i>
+          </a>
+        </div>
+      </div>
+      
+      <div class="member">
+        <h3>Roqaiah Domari</h3>
+        <p class="role">IT Senior Student</p>
+        <div class="social-links">
+          <a href="https://www.linkedin.com/in/roqaiah-domari" target="_blank" aria-label="Roqaiah Domari LinkedIn">
+            <i class="fab fa-linkedin"></i>
+          </a>
+        </div>
+      </div>
+
+      <div class="member">
+        <h3>Shaden Alqahtani</h3>
+        <p class="role">IT Senior Student</p>
+        <div class="social-links">
+          <a href="https://www.linkedin.com/in/shaden-alqahtani-8652a7399" target="_blank" aria-label="Shaden Alqahtani LinkedIn">
+            <i class="fab fa-linkedin"></i>
+          </a>
+        </div>
+      </div>
+
+      <div class="member">
+        <h3>Fajer Binali</h3>
+        <p class="role">IT Senior Student</p>
+        <div class="social-links">
+          <a href="https://www.linkedin.com/in/fajer-binali-74873b171" target="_blank" aria-label="Fajer Binali LinkedIn">
+            <i class="fab fa-linkedin"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+<footer class="footer">
+  <div class="footer-content">
+    <p>© 2025 DeepSight. All Rights Reserved.</p>
+</footer>
+
+
+<!-- تموج سفلي -->
+<svg class="wave-bottom" viewBox="0 0 1440 200" preserveAspectRatio="none">
+  <path fill="#9ed3cc" d="
+    M0,120 
+    C360,40 1080,160 1440,120 
+    L1440,200 
+    L0,200 
+    Z">
+  </path>
+</svg>
+
+</section>
+
+
+  
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support/Help</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='Pages.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+</head>
+<body>
+
+<header>
+    <div class="logo">
+        <a href="{{ url_for('starting') }}"><img src="{{ url_for('static', filename='logo.png') }}" alt="Logo"></a>
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-left">
+            <!-- يظهر دائماً -->
+            <a href="{{ url_for('starting') }}" class="{% if request.endpoint == 'starting' %}active{% endif %}">Home</a>
+            <a href="{{ url_for('starting') }}#feature">Features</a>
+            <a href="{{ url_for('starting') }}#about">About Us</a>
+            <a href="{{ url_for('starting') }}#team">Team</a>
+
+            <!-- Diagnosis History يظهر فقط إذا سجل الدخول -->
+            {% if session.get('doctor_name') %}
+                <a href="{{ url_for('history') }}" class="{% if request.endpoint == 'history' %}active{% endif %}">
+                    Diagnosis History
+                </a>
+            {% endif %}
+
+            <a href="{{ url_for('support') }}" class="{% if request.endpoint == 'support' %}active{% endif %}">Support</a>
+        </div>
+
+        <!-- قسم المستخدم إذا كان مسجل دخول -->
+        {% if session.get('doctor_name') %}
+        <div class="nav-right">
+            <div class="user-controls">
+                <div class="user-info">
+                    <span class="username">{{ session['doctor_name'] }}</span>
+                    <span class="user-title">{{ session['doctor_specialty'] }}</span>
+                </div>
+
+            <div class="user-icon" id="userIcon"> 
+            {% if session.get('doctor_image') %}
+            <img 
+            src="{{ session['doctor_image'] }}" 
+            alt="Doctor Avatar" 
+            class="avatar-img">
+            {% else %}
+            <i class="fa-solid fa-user fa-lg"></i>
+            {% endif %}
+            </div>
+
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <a href="{{ url_for('profile') }}">View Profile</a>
+                    <a href="{{ url_for('logout') }}" class="logout-link">Logout</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </nav>
+</header>
+
+<main class="support-container">
+    <div class="box">
+        <h2>Technical Support</h2>
+        <div class="contact-info">
+            <h3>Contact Information</h3>
+            <p><strong>Phone:</strong> +966 568486002</p>
+            <p><strong>Email:</strong> DeepSight.team@gmail.com</p>
+        </div>
+        <div>
+            <p><strong>Saturday - Friday:</strong> 9:00 AM - 5:00 PM </p>
+        </div>
+    </div>
+</main>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>

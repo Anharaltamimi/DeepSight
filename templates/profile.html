@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='Pages.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo"> 
+        </div>
+        <nav class="navbar">
+            <div class="nav-left">
+                <a href="{{ url_for('starting') }}">Home</a>
+                <a href="{{ url_for('history') }}">Diagnosis History</a>
+                <a href="{{ url_for('support') }}">Support</a>
+            </div>
+            <div class="nav-right">
+                <div class="user-controls">
+                    <div class="user-info">
+                        <span class="username">{{ session['doctor_name'] }}</span>
+                        <span class="user-title">{{ session['doctor_specialty'] }}</span>
+                    </div>
+                    <div class="user-icon" id="userIcon"> 
+                        {% if session.get('doctor_image') %}
+                        <img 
+                        src="{{ session['doctor_image'] }}" 
+                        alt="Doctor Avatar" 
+                        class="avatar-img">
+                        {% else %}
+                        <i class="fa-solid fa-user fa-lg"></i>
+                        {% endif %}
+                    </div>
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <a href="{{ url_for('profile') }}">View Profile</a>
+                        <a href="{{ url_for('logout') }}" class="logout-link">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="profile-page">
+        <div class="card-wrapper">
+            <div class="profile-card">
+                <div class="card-header">
+                    {% if doctor_image %}
+                        <img src="{{ doctor_image }}" alt="Doctor's Photo" class="profile-photo">
+                    {% else %}
+                        <i class="fa-solid fa-user fa-5x profile-photo-icon"></i>
+                    {% endif %}
+                    </div>
+                <div class="card-body">
+                    <h2 class="doctor-name">{{ doctor.Doctor_Name }}</h2>
+                    <p class="doctor-specialization">{{ doctor.Specialization }}</p>
+                    <p><strong>ID:</strong> <span class="doctor-id">{{ doctor.Doctor_ID }}</span></p>
+                    <p><strong>Email:</strong> <span id="emailField" class="doctor-email">{{ doctor.Email or 'Not provided' }}</span></p>
+                    <p><strong>Phone:</strong> <span id="phoneField" class="doctor-phone">{{ doctor.Phone_Num or 'Not provided' }}</span></p>
+                    <p><strong>Experience:</strong> <span class="doctor-experience">{{ doctor.Experience or 'Not provided' }} years</span></p>
+                    <p><strong>Hospital:</strong> <span class="doctor-hospital">{{ doctor.Hospital or 'Not provided' }}</span></p>
+                    <p><strong>Specialization:</strong> <span class="doctor-detailed">{{ doctor.Specialization }}</span></p>
+                    <button id="edit-btn" class="button">Edit Profile</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const editBtn = document.getElementById('edit-btn');
+        const emailField = document.getElementById('emailField');
+        const phoneField = document.getElementById('phoneField');
+        const profilePhotoContainer = document.querySelector('.card-header'); // الحاوية التي تحمل الصورة أو الأيقونة
+        const profilePhotoElement = profilePhotoContainer.querySelector('.profile-photo') || profilePhotoContainer.querySelector('.profile-photo-icon');
+        
+        let isEditing = false;
+        
+        // إنشاء input type="file" ديناميكياً
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.style.display = 'none';
+        document.body.appendChild(fileInput);
+
+        // متغير لتخزين مسار الصورة الجديد (Base64) قبل الإرسال
+        let newImageBase64 = null; 
+
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => { 
+                    // إذا كانت هناك أيقونة (i)، نستبدلها بعنصر img
+                    let imgElement = profilePhotoContainer.querySelector('img.profile-photo');
+                    if (!imgElement) {
+                        // إنشاء عنصر img إذا لم يكن موجوداً
+                        imgElement = document.createElement('img');
+                        imgElement.classList.add('profile-photo');
+                        imgElement.alt = "Doctor's Photo";
+                        // إزالة الأيقونة الافتراضية
+                        const icon = profilePhotoContainer.querySelector('i.profile-photo-icon');
+                        if (icon) profilePhotoContainer.removeChild(icon);
+                        profilePhotoContainer.appendChild(imgElement);
+                    }
+                    
+                    imgElement.src = e.target.result; 
+                    newImageBase64 = e.target.result; // حفظ مسار Base64 للإرسال
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function handleImageClick() {
+            fileInput.click();
+        }
+
+        editBtn.addEventListener('click', async () => {
+            isEditing = !isEditing;
+
+            if (isEditing) {
+                editBtn.textContent = 'Save Changes';
+                editBtn.classList.add('btn-warning');
+                emailField.contentEditable = true;
+                phoneField.contentEditable = true;
+                
+                // إضافة معالج حدث النقر للصورة لتغييرها
+                profilePhotoContainer.classList.add('editable-photo');
+                profilePhotoContainer.title = 'Click to change photo';
+                profilePhotoContainer.addEventListener('click', handleImageClick);
+                
+                alert('You can now edit Email, Phone Number, and change the Profile Photo.');
+
+            } else {
+                editBtn.textContent = 'Edit Profile';
+                editBtn.classList.remove('btn-warning');
+                emailField.contentEditable = false;
+                phoneField.contentEditable = false;
+                
+                // إزالة معالج حدث النقر 
+                profilePhotoContainer.classList.remove('editable-photo');
+                profilePhotoContainer.title = '';
+                profilePhotoContainer.removeEventListener('click', handleImageClick);
+
+                const updatedData = {
+                    email: emailField.textContent.trim(),
+                    phone: phoneField.textContent.trim(),
+                    // إرسال الصورة الجديدة (Base64) فقط إذا تم اختيار صورة جديدة
+                    profile_image: newImageBase64 
+                };
+
+                try {
+                    const res = await fetch('{{ url_for("update_doctor_profile") }}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updatedData)
+                    });
+                    
+                    if (!res.ok) throw new Error('Failed to save changes');
+                    
+                    // 🌟🌟🌟 الخطوة الأهم: التحديث الفوري لصورة الهيدر 🌟🌟🌟
+                    if (newImageBase64) {
+                        const headerIconContainer = document.getElementById('userIcon');
+                        let headerImg = headerIconContainer.querySelector('img.avatar-img');
+                        let newImageSrc = newImageBase64;
+                        
+                        if (headerImg) {
+                            // إذا كان هناك عنصر img، نحدث المسار
+                            headerImg.src = newImageSrc;
+                        } else {
+                            // إذا كان الهيدر يعرض الأيقونة (i)، نستبدلها بعنصر img جديد
+                            const defaultIcon = headerIconContainer.querySelector('i');
+                            if (defaultIcon) {
+                                headerIconContainer.removeChild(defaultIcon);
+                            }
+                            
+                            headerImg = document.createElement('img');
+                            headerImg.src = newImageSrc;
+                            headerImg.alt = "Doctor Avatar";
+                            headerImg.classList.add('avatar-img');
+                            headerIconContainer.appendChild(headerImg);
+                        }
+                    }
+                    
+                    // إعادة تعيين newImageBase64
+                    newImageBase64 = null; 
+                    
+                    alert('Changes saved successfully! Header icon updated.');
+                    
+                } catch (err) {
+                    console.error(err);
+                    alert('Error saving changes.');
+                }
+            }
+        });
+    });
+    </script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

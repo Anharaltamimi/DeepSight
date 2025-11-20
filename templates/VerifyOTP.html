@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Verification</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='Pages.css') }}">
+</head>
+<body>
+    <div class="verification-container">
+        <div class="verification-card">
+            <h2 class="card-title">Two-Factor Authentication</h2>
+            <p class="card-subtitle">Please enter the 6-digit verification code sent to your email to continue.</p>
+            <div class="code-input-group">
+                <input type="text" id="code1" class="code-input" maxlength="1" pattern="[0-9]">
+                <input type="text" id="code2" class="code-input" maxlength="1" pattern="[0-9]">
+                <input type="text" id="code3" class="code-input" maxlength="1" pattern="[0-9]">
+                <input type="text" id="code4" class="code-input" maxlength="1" pattern="[0-9]">
+                <input type="text" id="code5" class="code-input" maxlength="1" pattern="[0-9]">
+                <input type="text" id="code6" class="code-input" maxlength="1" pattern="[0-9]">
+            </div>
+            <button id="verifyButton" class="primary-btn">Verify Account</button>
+            <p class="resend-text">Didn't receive the code? 
+                <a href="#" id="resendLink" class="resend-link">Resend Code</a> 
+                <span id="timer">(60s)</span>
+            </p>
+            <p id="messageArea" class="message-area"></p>
+        </div>
+    </div>
+    <script>
+        const inputs = document.querySelectorAll('.code-input');
+        const resendLink = document.getElementById('resendLink');
+        const timerSpan = document.getElementById('timer');
+        const verifyButton = document.getElementById('verifyButton');
+        const messageArea = document.getElementById('messageArea');
+        let countdown = 60;
+        let timerInterval;
+        function startTimer() {
+            resendLink.style.pointerEvents = 'none';
+            resendLink.style.color = 'gray';
+            timerSpan.style.display = 'inline';
+            timerInterval = setInterval(() => {
+                countdown--;
+                timerSpan.textContent = `(${countdown}s)`;
+                if(countdown <=0){
+                    clearInterval(timerInterval);
+                    timerSpan.style.display='none';
+                    resendLink.style.pointerEvents='auto';
+                    resendLink.style.color='#4E6A4C';
+                    countdown=60;
+                }
+            },1000);
+        }
+        inputs.forEach((input,index)=>{
+            input.addEventListener('input',(e)=>{
+                if(e.data && index<inputs.length-1) inputs[index+1].focus();
+            });
+            input.addEventListener('keydown',(e)=>{
+                if(e.key==='Backspace' && input.value==='' && index>0) inputs[index-1].focus();
+            });
+        });
+        verifyButton.addEventListener('click',()=>{
+            const enteredCode=Array.from(inputs).map(i=>i.value).join('');
+            fetch("{{ url_for('verify_otp_post') }}",{
+                method:'POST',
+                headers:{'Content-Type':'application/x-www-form-urlencoded'},
+                body:`otp=${enteredCode}`
+            }).then(r=>{
+                if(r.ok){
+                    messageArea.textContent='Verification Successful! Redirecting...';
+                    messageArea.style.color='#4E6A4C';
+                    setTimeout(()=>{window.location.href="{{ url_for('starting') }}";},1500);
+                }else{
+                    messageArea.textContent='Invalid Code. Please check your email.';
+                    messageArea.style.color='crimson';
+                }
+            });
+        });
+        resendLink.addEventListener('click',(e)=>{
+            e.preventDefault();
+            fetch("{{ url_for('resend_otp') }}").then(r=>r.json()).then(data=>{
+                if(data.ok){
+                    messageArea.textContent='New code sent! Check your email.';
+                    messageArea.style.color='#4E6A4C';
+                    startTimer();
+                }
+            });
+        });
+        startTimer();
+    </script>
+</body>
+</html>
