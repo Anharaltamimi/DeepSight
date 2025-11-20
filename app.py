@@ -1,11 +1,8 @@
 # app.py
-
 import os
 import base64
 import random
-import smtplib
 from datetime import datetime, date
-from email.mime.text import MIMEText
 from oct_checker import is_oct_image
 
 
@@ -23,6 +20,11 @@ import tensorflow as tf
 from tensorflow.keras.models import load_model
 from tensorflow.keras.applications.densenet import preprocess_input
 
+# ===== إرسال الإيميل عبر Gmail SMTP للـ OTP =====
+import smtplib
+from email.mime.text import MIMEText
+
+from oct_checker import is_oct_image
 
 # ===============================
 # Gmail SMTP Email config
@@ -31,7 +33,7 @@ GMAIL_ADDRESS = "deepsight.team@gmail.com"
 GMAIL_APP_PASSWORD = "wdijxacjiabrcktk"  # App Password
 
 def send_otp_email(to_email: str, otp_code: str) -> bool:
-    # 💥 CORRECTED INDENTATION AND SYNTAX IN THIS BLOCK 💥
+   
     try:
         subject = "DeepSight Login Verification Code"
         html_body = f"""
@@ -68,18 +70,17 @@ def send_otp_email(to_email: str, otp_code: str) -> bool:
 app = Flask(__name__)
 app.secret_key = "X9v#4tLq8!pD2zR1mB7sH5wK0fU6yQ3j"  
 
-# **ملاحظة:** تأكد من تعيين هذا المسار كـ Environment Variable في Render
 app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root@localhost:3306/deepsight_db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 # ===============================
-# Paths (Re-typed to fix Invalid Characters)
+# Paths
 # ===============================
-STATIC_DIR = os.path.join(app.root_path, "static")
-UPLOAD_DIR = os.path.join(STATIC_DIR, "uploads")
+STATIC_DIR  = os.path.join(app.root_path, "static")
+UPLOAD_DIR  = os.path.join(STATIC_DIR, "uploads")
 REPORTS_DIR = os.path.join(STATIC_DIR, "reports")
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+os.makedirs(UPLOAD_DIR,  exist_ok=True)
 os.makedirs(REPORTS_DIR, exist_ok=True)
 
 ALLOWED_EXT = {"png", "jpg", "jpeg"}
@@ -87,25 +88,10 @@ def allowed_ext(filename: str) -> bool:
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXT
 
 # ===============================
-# Load DenseNet model (Lazy Loading Applied)
+# Load DenseNet model
 # ===============================
 MODEL_PATH = os.path.join(app.root_path, "models", "best_model_fold_3.keras")
-# 1. تعريف النموذج كـ None
-model = None 
-
-def get_model():
-    """يحمّل النموذج في المرة الأولى التي يتم استدعاؤه فيها. هذا يسمح لـ Gunicorn بالبدء بسرعة."""
-    global model
-    if model is None:
-        print("💡 INFO: Lazy Loading Keras Model...")
-        # 2. يتم التحميل هنا فقط عند الطلب الأول
-        try:
-            model = load_model(MODEL_PATH)
-            print("💡 INFO: Keras Model loaded successfully.")
-        except Exception as e:
-            print(f"❌ ERROR: Failed to load model: {e}")
-            raise RuntimeError("ML Model not found or corrupted on server.")
-    return model
+model = load_model(MODEL_PATH)
 
 CLASSES_FOR_REPORT = ["DME", "Normal"]
 
@@ -127,40 +113,39 @@ class Doctor(db.Model):
 
 class Patient(db.Model):
     __tablename__ = "Patients"
-    ID = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    Patient_ID = db.Column(db.String(20), unique=True, nullable=False)
-    Patient_Name = db.Column(db.String(100), nullable=False)
-    Gender = db.Column(db.String(10), nullable=False)
+    ID            = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    Patient_ID    = db.Column(db.String(20), unique=True, nullable=False)
+    Patient_Name  = db.Column(db.String(100), nullable=False)
+    Gender        = db.Column(db.String(10), nullable=False)
     Date_Of_Birth = db.Column(db.Date, nullable=False)
 
 class Diagnosis(db.Model):
     __tablename__ = "Diagnoses"
-    ID = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    Patient_Name = db.Column(db.String(100), nullable=False)
-    Patient_ID = db.Column(db.String(20), db.ForeignKey("Patients.Patient_ID"), nullable=False)
-    Doctor_Name = db.Column(db.String(100), nullable=False)
-    Date_Of_Scan = db.Column(db.Date, nullable=False, default= datetime.now())
+    ID               = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    Patient_Name     = db.Column(db.String(100), nullable=False)
+    Patient_ID       = db.Column(db.String(20), db.ForeignKey("Patients.Patient_ID"), nullable=False)
+    Doctor_Name      = db.Column(db.String(100), nullable=False)
+    Date_Of_Scan     = db.Column(db.Date, nullable=False, default= datetime.now())
     Diagnosis_Result = db.Column(db.String(200))
 
 
 # ===============================
-# Grad-CAM helper (Modified)
+# Grad-CAM helper
 # ===============================
-def build_heatmap(saved_path: str, x_batch: np.ndarray, cls_idx: int, label_text: str, ml_model) -> str | None:
+def build_heatmap(saved_path: str, x_batch: np.ndarray, cls_idx: int, label_text: str) -> str | None:
     """يبني Heatmap ويعيد اسم الملف داخل static/uploads، أو None عند الفشل."""
     try:
-        # ✅ استخدام النموذج المُمرر كمعامل (ml_model)
-        last_conv = ml_model.get_layer("conv5_block16_concat")
-        heatmap_model = tf.keras.models.Model([ml_model.inputs], [last_conv.output, ml_model.output])
+        last_conv = model.get_layer("conv5_block16_concat")
+        heatmap_model = tf.keras.models.Model([model.inputs], [last_conv.output, model.output])
 
         with tf.GradientTape() as tape:
             conv_out, preds = heatmap_model(x_batch)
             loss = preds[:, cls_idx]
 
-        grads = tape.gradient(loss, conv_out)
-        pooled = tf.reduce_mean(grads, axis=(0, 1, 2))
-        heat = tf.reduce_mean(conv_out * pooled, axis=-1).numpy()[0]
-        heat = np.maximum(heat, 0)
+        grads   = tape.gradient(loss, conv_out)
+        pooled  = tf.reduce_mean(grads, axis=(0, 1, 2))
+        heat    = tf.reduce_mean(conv_out * pooled, axis=-1).numpy()[0]
+        heat    = np.maximum(heat, 0)
         if heat.max() > 0:
             heat /= heat.max()
 
@@ -168,14 +153,14 @@ def build_heatmap(saved_path: str, x_batch: np.ndarray, cls_idx: int, label_text
         if orig is None:
             return None
 
-        heat = cv2.resize(heat, (orig.shape[1], orig.shape[0]))
-        heat = np.uint8(255 * heat)
+        heat    = cv2.resize(heat, (orig.shape[1], orig.shape[0]))
+        heat    = np.uint8(255 * heat)
         colored = cv2.applyColorMap(heat, cv2.COLORMAP_JET)  # BGR
 
         if (label_text or "").lower() == "normal":
             colored[:, :, 2] = (colored[:, :, 2] * 0.15).astype(np.uint8)
 
-        overlay = cv2.addWeighted(orig, 0.6, colored, 0.4, 0)
+        overlay      = cv2.addWeighted(orig, 0.6, colored, 0.4, 0)
         heatmap_name = "heatmap_" + os.path.basename(saved_path)
         heatmap_path = os.path.join(UPLOAD_DIR, heatmap_name)
         ok = cv2.imwrite(heatmap_path, overlay)
@@ -186,18 +171,10 @@ def build_heatmap(saved_path: str, x_batch: np.ndarray, cls_idx: int, label_text
 
 
 # ===============================
-# Health Check Endpoint (NEW)
-# ===============================
-@app.get("/healthz")
-def health_check():
-    """يرد بـ 200 OK فوراً للإشارة إلى أن الخادم بدأ."""
-    return "OK", 200
-
-# ===============================
 # Auth & basic pages
 # ===============================
-TEST_MODE = True
-TEST_OTP = "654321"
+TEST_MODE =False
+TEST_OTP="654321"
 @app.get("/")
 def index():
     # أول صفحة تظهر عند الدخول
@@ -315,6 +292,8 @@ def logout():
     return redirect(url_for("starting", msg="Logged out successfully ✅"))
 
 
+# app.py
+
 @app.get("/starting")
 def starting():
     logged_in = "doctor_id" in session
@@ -326,7 +305,7 @@ def starting():
     return render_template("starting.html", logged_in=logged_in, message=msg)
 
 # ===============================
-# Upload → Predict → Save (Modified)
+# Upload → Predict → Save
 # ===============================
 @app.route("/upload", methods=["GET", "POST"])
 def upload_page():
@@ -339,9 +318,9 @@ def upload_page():
 
     # (1) بيانات المريض
     patient_name = (request.form.get("fname") or "").strip()
-    patient_id = (request.form.get("id") or "").strip()
-    gender = (request.form.get("gender") or "").strip()
-    dob_raw = (request.form.get("dateOfBirth") or "").strip()
+    patient_id   = (request.form.get("id") or "").strip()
+    gender       = (request.form.get("gender") or "").strip()
+    dob_raw      = (request.form.get("dateOfBirth") or "").strip()
 
     # (2) فحص وجود الصورة وصحة الامتداد
     f = request.files.get("uploadImage")
@@ -352,7 +331,7 @@ def upload_page():
         return render_template("Upload.html", message="Only PNG/JPG images are allowed ❌")
 
     # (3) حفظ الصورة
-    safe_name = secure_filename(f.filename)
+    safe_name  = secure_filename(f.filename)
     saved_path = os.path.join(UPLOAD_DIR, safe_name)
     f.save(saved_path)
 
@@ -377,26 +356,15 @@ def upload_page():
     x = np.expand_dims(x, 0)
     x = preprocess_input(x)
 
-    # (6) التوقع (استخدام النموذج المحمل كسولاً)
-    try:
-        current_model = get_model() # 🔑 يتم تحميل النموذج هنا لأول مرة 
-        y = current_model.predict(x, verbose=0)[0]
-    except RuntimeError as e:
-        # إذا فشل التحميل بسبب خطأ RuntimeError المرفوع من get_model
-        os.remove(saved_path)
-        return render_template("Upload.html", message=f"Server Error: Model loading failed ({e}) ❌")
-    except Exception as e:
-        # خطأ أثناء التوقع
-        os.remove(saved_path)
-        return render_template("Upload.html", message=f"Prediction failed: {e} ❌")
-        
+    # (6) التوقع
+    y       = model.predict(x, verbose=0)[0]
     cls_idx = int(np.argmax(y))
-    label = CLASSES_FOR_REPORT[cls_idx] if cls_idx < len(CLASSES_FOR_REPORT) else "None"
-    score = float(np.max(y))
+    label   = CLASSES_FOR_REPORT[cls_idx] if cls_idx < len(CLASSES_FOR_REPORT) else "None"
+    score   = float(np.max(y))
     conf_percent = round(score * 100, 2)
 
-    # Grad-CAM (تمرير النموذج المحمل)
-    heatmap_name = build_heatmap(saved_path, x, cls_idx, label_text=label, ml_model=current_model)
+    # Grad-CAM
+    heatmap_name = build_heatmap(saved_path, x, cls_idx, label_text=label)
 
     # (7) حفظ/تحديث بيانات المريض مع تحقق صارم من الاسم والـ ID
     try:
@@ -414,7 +382,7 @@ def upload_page():
                 message=f"Patient ID '{patient_id}' already exists with a different name ❌"
             )
         # يمكن تحديث بقية المعلومات مثل الجنس وتاريخ الميلاد
-        patient.Gender = gender
+        patient.Gender        = gender
         patient.Date_Of_Birth = dob
     else:
         patient = Patient(
@@ -439,16 +407,16 @@ def upload_page():
     db.session.commit()
 
     # تخزين بيانات آخر نتيجة
-    session["last_diag_id"] = diag.ID
-    session["last_patient_id"] = patient_id
-    session["last_patient_name"] = patient_name
-    session["last_patient_gender"] = gender
-    session["last_patient_dob"] = dob_raw
-    session["last_scan_time"] = datetime.now().isoformat(timespec="minutes")
-    session["last_image_name"] = os.path.basename(saved_path)
-    session["last_label"] = label
-    session["last_confidence"] = conf_percent
-    session["last_heatmap_name"] = heatmap_name or ""
+    session["last_diag_id"]       = diag.ID
+    session["last_patient_id"]    = patient_id
+    session["last_patient_name"]  = patient_name
+    session["last_patient_gender"]= gender
+    session["last_patient_dob"]   = dob_raw
+    session["last_scan_time"]     = datetime.now().isoformat(timespec="minutes")
+    session["last_image_name"]    = os.path.basename(saved_path)
+    session["last_label"]         = label
+    session["last_confidence"]    = conf_percent
+    session["last_heatmap_name"]  = heatmap_name or ""
 
     return redirect(url_for("results"))
 
@@ -468,6 +436,7 @@ def results():
     )
 
 
+
 @app.get("/report")
 def report():
     if "doctor_id" not in session:
@@ -476,14 +445,14 @@ def report():
     doctor = Doctor.query.filter_by(Doctor_ID=session.get("doctor_id")).first()
     report_ctx = {
         "patientName": session.get("last_patient_name", "—"),
-        "patientID": session.get("last_patient_id", "—"),
-        "gender": session.get("last_patient_gender", "—"),
-        "dob": session.get("last_patient_dob", ""),
-        "scan_time": session.get("last_scan_time", "—"),
-        "result": session.get("last_label", "—"),
-        "confidence": session.get("last_confidence", "—"),
-        "heatmapUrl": url_for("static", filename=f"uploads/{session.get('last_heatmap_name','')}") if session.get("last_heatmap_name") else "",
-        "octImage": url_for("static", filename=f"uploads/{session.get('last_image_name','')}") if session.get("last_image_name") else ""
+        "patientID":   session.get("last_patient_id", "—"),
+        "gender":      session.get("last_patient_gender", "—"),
+        "dob":         session.get("last_patient_dob", ""),
+        "scan_time":   session.get("last_scan_time", "—"),
+        "result":      session.get("last_label", "—"),
+        "confidence":  session.get("last_confidence", "—"),
+        "heatmapUrl":  url_for("static", filename=f"uploads/{session.get('last_heatmap_name','')}") if session.get("last_heatmap_name") else "",
+        "octImage":    url_for("static", filename=f"uploads/{session.get('last_image_name','')}") if session.get("last_image_name") else ""
     }
     diag_id = session.get("last_diag_id")
     return render_template("ViewReport.html", report=report_ctx, doctor=doctor, diag_id=diag_id)
@@ -497,7 +466,7 @@ def save_report_pdf():
     if "doctor_id" not in session:
         return "Unauthorized", 401
 
-    diag_id = (request.form.get("diag_id") or "").strip()
+    diag_id  = (request.form.get("diag_id") or "").strip()
     pdf_file = request.files.get("pdf")
     if not diag_id or not pdf_file:
         return "Missing diag_id or pdf file", 400
@@ -540,18 +509,18 @@ def download_report_by_id(diag_id: int):
     p = Patient.query.filter_by(Patient_ID=d.Patient_ID).first()
     is_latest = (session.get("last_diag_id") == d.ID)
     heatmap_url = url_for("static", filename=f"uploads/{session.get('last_heatmap_name','')}") if is_latest and session.get("last_heatmap_name") else ""
-    oct_url = url_for("static", filename=f"uploads/{session.get('last_image_name','')}") if is_latest and session.get("last_image_name") else ""
+    oct_url     = url_for("static", filename=f"uploads/{session.get('last_image_name','')}")     if is_latest and session.get("last_image_name")   else ""
 
     report_ctx = {
         "patientName": d.Patient_Name or (p.Patient_Name if p else "—"),
-        "patientID": d.Patient_ID,
-        "gender": (p.Gender if p else "—"),
-        "dob": (p.Date_Of_Birth.isoformat() if p else ""),
-        "scan_time": d.Date_Of_Scan.isoformat(),
-        "result": d.Diagnosis_Result or "—",
-        "confidence": session.get("last_confidence", "—") if is_latest else "—",
-        "heatmapUrl": heatmap_url,
-        "octImage": oct_url
+        "patientID":   d.Patient_ID,
+        "gender":      (p.Gender if p else "—"),
+        "dob":         (p.Date_Of_Birth.isoformat() if p else ""),
+        "scan_time":   d.Date_Of_Scan.isoformat(),
+        "result":      d.Diagnosis_Result or "—",
+        "confidence":  session.get("last_confidence", "—") if is_latest else "—",
+        "heatmapUrl":  heatmap_url,
+        "octImage":    oct_url
     }
 
     html = render_template("ViewReport.html", report=report_ctx, doctor=None, diag_id=d.ID)
@@ -585,12 +554,12 @@ def get_history():
     out = []
     for r in rows:
         out.append({
-            "diag_id": r.ID,
-            "patient_name": r.Patient_Name,
-            "Patient_ID": r.Patient_ID,
-            "doctor_name": r.Doctor_Name,
+            "diag_id":       r.ID,
+            "patient_name":  r.Patient_Name,
+            "Patient_ID":    r.Patient_ID,
+            "doctor_name":   r.Doctor_Name,
             "scan_datetime": str(r.Date_Of_Scan),
-            "result": r.Diagnosis_Result or "—",
+            "result":        r.Diagnosis_Result or "—",
         })
     return jsonify(out)
 
@@ -600,8 +569,8 @@ def get_history():
 # ===============================
 @app.get("/support")
 def support():
-    logged_in = "doctor_id" in session
-    return render_template("Support.html", logged_in=logged_in) 
+ logged_in = "doctor_id" in session
+ return render_template("Support.html", logged_in=logged_in) 
 
 # ===============================
 # Profile
@@ -635,7 +604,6 @@ def update_doctor_profile():
     # حفظ صورة بروفايل مصغّرة إذا أرسلت Base64
     if image_data and image_data.startswith("data:image"):
         import io
-        
         header, encoded = image_data.split(",", 1)
         image_bytes = base64.b64decode(encoded)
         img = Image.open(io.BytesIO(image_bytes)).convert("RGB") 
@@ -651,3 +619,5 @@ def update_doctor_profile():
 # ===============================
 # Run
 # ===============================
+if __name__ == "__main__":
+    app.run(debug=True)
