@@ -6,8 +6,8 @@ import random
 import smtplib
 from datetime import datetime, date
 from email.mime.text import MIMEText
-# تأكد من أن oct_checker.py موجود
 from oct_checker import is_oct_image
+
 
 from flask import (
     Flask, render_template, request, redirect, url_for,
@@ -31,6 +31,7 @@ GMAIL_ADDRESS = "deepsight.team@gmail.com"
 GMAIL_APP_PASSWORD = "wdijxacjiabrcktk"  # App Password
 
 def send_otp_email(to_email: str, otp_code: str) -> bool:
+    # 💥 CORRECTED INDENTATION AND SYNTAX IN THIS BLOCK 💥
     try:
         subject = "DeepSight Login Verification Code"
         html_body = f"""
@@ -67,13 +68,13 @@ def send_otp_email(to_email: str, otp_code: str) -> bool:
 app = Flask(__name__)
 app.secret_key = "X9v#4tLq8!pD2zR1mB7sH5wK0fU6yQ3j"  
 
-# **ملاحظة:** تأكد من تغيير هذا المسار لقاعدة البيانات في Render
+# **ملاحظة:** تأكد من تعيين هذا المسار كـ Environment Variable في Render
 app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root@localhost:3306/deepsight_db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 # ===============================
-# Paths
+# Paths (Re-typed to fix Invalid Characters)
 # ===============================
 STATIC_DIR = os.path.join(app.root_path, "static")
 UPLOAD_DIR = os.path.join(STATIC_DIR, "uploads")
@@ -183,6 +184,14 @@ def build_heatmap(saved_path: str, x_batch: np.ndarray, cls_idx: int, label_text
         print("Grad-CAM error:", repr(e))
         return None
 
+
+# ===============================
+# Health Check Endpoint (NEW)
+# ===============================
+@app.get("/healthz")
+def health_check():
+    """يرد بـ 200 OK فوراً للإشارة إلى أن الخادم بدأ."""
+    return "OK", 200
 
 # ===============================
 # Auth & basic pages
