@@ -88,19 +88,10 @@ def allowed_ext(filename: str) -> bool:
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXT
 
 # ===============================
-# Model Loader – Lazy Loading
+# Load DenseNet model
 # ===============================
-model = None
-
-def load_model_lazy():
-    global model
-    if model is None:
-        print("🟦 Loading model into memory...")
-        MODEL_PATH = os.path.join(app.root_path, "models", "best_model_fold_3.keras")
-        model = load_model(MODEL_PATH)
-        print("🟩 Model loaded successfully")
-    return model
-
+MODEL_PATH = os.path.join(app.root_path, "models", "best_model_fold_3.keras")
+model = load_model(MODEL_PATH)
 
 CLASSES_FOR_REPORT = ["DME", "Normal"]
 
@@ -366,9 +357,7 @@ def upload_page():
     x = preprocess_input(x)
 
     # (6) التوقع
-    mdl = load_model_lazy()
-    y = mdl.predict(x, verbose=0)[0]
-
+    y       = model.predict(x, verbose=0)[0]
     cls_idx = int(np.argmax(y))
     label   = CLASSES_FOR_REPORT[cls_idx] if cls_idx < len(CLASSES_FOR_REPORT) else "None"
     score   = float(np.max(y))
@@ -630,7 +619,3 @@ def update_doctor_profile():
 # ===============================
 # Run
 # ===============================
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
-
