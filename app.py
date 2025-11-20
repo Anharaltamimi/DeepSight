@@ -173,7 +173,7 @@ def build_heatmap(saved_path: str, x_batch: np.ndarray, cls_idx: int, label_text
 # ===============================
 # Auth & basic pages
 # ===============================
-TEST_MODE =False
+TEST_MODE =True
 TEST_OTP="654321"
 @app.get("/")
 def index():
@@ -619,5 +619,3 @@ def update_doctor_profile():
 # ===============================
 # Run
 # ===============================
-if __name__ == "__main__":
-    app.run(debug=True)
