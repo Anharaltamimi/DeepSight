@@ -366,8 +366,8 @@ def upload_page():
     x = preprocess_input(x)
 
     # (6) التوقع
-   mdl = load_model_lazy()
-y = mdl.predict(x, verbose=0)[0]
+    mdl = load_model_lazy()
+    y = mdl.predict(x, verbose=0)[0]
 
     cls_idx = int(np.argmax(y))
     label   = CLASSES_FOR_REPORT[cls_idx] if cls_idx < len(CLASSES_FOR_REPORT) else "None"
